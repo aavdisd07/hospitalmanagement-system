@@ -1,0 +1,3 @@
+com\mycompany\hms\dao\AppointmentDaoIT.class
+com\mycompany\hms\service\PatientServiceTest.class
+com\mycompany\hms\service\AppointmentServiceTest.class
