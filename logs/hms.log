@@ -1,0 +1,45 @@
+2026-04-25 10:12:03,336 [main] INFO  c.m.hms.service.AppointmentService - Appointment booked: id=42 patient=1 doctor=2 date=2026-04-26
+2026-04-25 10:12:03,395 [main] INFO  c.m.hms.service.PatientService - Patient created: id=7 name=Ana
+2026-04-25 10:17:56,127 [main] INFO  c.m.hms.service.AppointmentService - Appointment booked: id=42 patient=1 doctor=2 date=2026-04-26
+2026-04-25 10:17:56,159 [main] INFO  c.m.hms.service.PatientService - Patient created: id=7 name=Ana
+2026-04-25 10:27:35,864 [main] INFO  c.m.hms.service.AppointmentService - Appointment booked: id=42 patient=1 doctor=2 when=2026-04-26 10:00
+2026-04-25 10:27:35,917 [main] INFO  c.m.hms.service.PatientService - Patient created: id=7 name=Ana
+2026-04-25 11:34:49,094 [main] INFO  c.m.hms.service.AppointmentService - Appointment booked: id=42 patient=1 doctor=2 when=2026-04-26 10:00
+2026-04-25 11:34:49,143 [main] INFO  c.m.hms.service.PatientService - Patient created: id=7 name=Ana
+2026-04-25 11:35:21,634 [com.mycompany.hospitalmanagementsystem.HospitalManagementSystem.main()] INFO  c.m.h.HospitalManagementSystem - HMS starting
+2026-04-25 11:35:21,666 [com.mycompany.hospitalmanagementsystem.HospitalManagementSystem.main()] INFO  com.zaxxer.hikari.HikariDataSource - hms-pool - Starting...
+2026-04-25 11:35:22,991 [com.mycompany.hospitalmanagementsystem.HospitalManagementSystem.main()] ERROR c.m.h.HospitalManagementSystem - Startup failed
+com.zaxxer.hikari.pool.HikariPool$PoolInitializationException: Failed to initialize pool: Access denied for user 'root'@'localhost' (using password: YES)
+	at com.zaxxer.hikari.pool.HikariPool.throwPoolInitializationException(HikariPool.java:584)
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:571)
+	at com.zaxxer.hikari.pool.HikariPool.<init>(HikariPool.java:98)
+	at com.zaxxer.hikari.HikariDataSource.<init>(HikariDataSource.java:80)
+	at com.mycompany.hms.db.Database.dataSource(Database.java:30)
+	at com.mycompany.hms.db.Migrator.migrate(Migrator.java:20)
+	at com.mycompany.hospitalmanagementsystem.HospitalManagementSystem.main(HospitalManagementSystem.java:19)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
+	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:568)
+	at org.codehaus.mojo.exec.AbstractExecJavaBase.executeMainMethod(AbstractExecJavaBase.java:402)
+	at org.codehaus.mojo.exec.ExecJavaMojo.executeMainMethod(ExecJavaMojo.java:142)
+	at org.codehaus.mojo.exec.AbstractExecJavaBase.doExecClassLoader(AbstractExecJavaBase.java:377)
+	at org.codehaus.mojo.exec.AbstractExecJavaBase.lambda$execute$0(AbstractExecJavaBase.java:287)
+	at java.base/java.lang.Thread.run(Thread.java:842)
+Caused by: java.sql.SQLException: Access denied for user 'root'@'localhost' (using password: YES)
+	at com.mysql.cj.jdbc.exceptions.SQLError.createSQLException(SQLError.java:130)
+	at com.mysql.cj.jdbc.exceptions.SQLExceptionsMapping.translateException(SQLExceptionsMapping.java:122)
+	at com.mysql.cj.jdbc.ConnectionImpl.createNewIO(ConnectionImpl.java:825)
+	at com.mysql.cj.jdbc.ConnectionImpl.<init>(ConnectionImpl.java:446)
+	at com.mysql.cj.jdbc.ConnectionImpl.getInstance(ConnectionImpl.java:239)
+	at com.mysql.cj.jdbc.NonRegisteringDriver.connect(NonRegisteringDriver.java:188)
+	at com.zaxxer.hikari.util.DriverDataSource.getConnection(DriverDataSource.java:137)
+	at com.zaxxer.hikari.pool.PoolBase.newConnection(PoolBase.java:360)
+	at com.zaxxer.hikari.pool.PoolBase.newPoolEntry(PoolBase.java:202)
+	at com.zaxxer.hikari.pool.HikariPool.createPoolEntry(HikariPool.java:461)
+	at com.zaxxer.hikari.pool.HikariPool.checkFailFast(HikariPool.java:550)
+	... 14 common frames omitted
+2026-04-25 11:35:55,881 [main] INFO  c.m.hms.service.AppointmentService - Appointment booked: id=42 patient=1 doctor=2 when=2026-04-26 10:00
+2026-04-25 11:35:55,926 [main] INFO  c.m.hms.service.PatientService - Patient created: id=7 name=Ana
+2026-04-25 11:36:05,022 [main] INFO  c.m.hms.service.AppointmentService - Appointment booked: id=42 patient=1 doctor=2 when=2026-04-26 10:00
+2026-04-25 11:36:05,064 [main] INFO  c.m.hms.service.PatientService - Patient created: id=7 name=Ana

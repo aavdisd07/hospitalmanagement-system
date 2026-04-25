@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 540" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <style>
+      .layer    { fill:#FFF7EE; stroke:#E67E22; stroke-width:2; rx:8; ry:8; }
+      .layer-d  { fill:#EAF4FB; stroke:#3498DB; stroke-width:2; rx:8; ry:8; }
+      .layer-g  { fill:#EAF7EE; stroke:#27AE60; stroke-width:2; rx:8; ry:8; }
+      .layer-p  { fill:#F4ECF7; stroke:#9B59B6; stroke-width:2; rx:8; ry:8; }
+      .ext      { fill:#F2F2F2; stroke:#888; stroke-width:1.5; rx:8; ry:8; }
+      .title    { font-size:18px; font-weight:bold; }
+      .label    { font-size:13px; }
+      .small    { font-size:11px; fill:#555; }
+      .arrow    { stroke:#444; stroke-width:1.5; fill:none; }
+      .head     { fill:#444; }
+    </style>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" class="head"/>
+    </marker>
+  </defs>
+
+  <text x="20" y="32" class="title">Hospital Management System — Architecture</text>
+
+  <!-- UI -->
+  <rect x="20"  y="60"  width="840" height="90" class="layer"/>
+  <text x="40"  y="84"  class="title">UI Layer (Swing + FlatLaf)</text>
+  <text x="40"  y="108" class="label">LoginFrame · HomePage · Dashboard · BookAppointmentFrame · PatientSearchFrame</text>
+  <text x="40"  y="126" class="label">AddDoctorFrame · EditDoctorFrame · DeleteDoctorFrame · legacy NetBeans forms</text>
+  <text x="40"  y="142" class="small">FlatLaf themes (light/dark, persisted) · SVG icons · JFreeChart · JCalendar · POI/OpenPDF/opencsv exports</text>
+
+  <!-- Service -->
+  <rect x="20"  y="170" width="840" height="90" class="layer-d"/>
+  <text x="40"  y="194" class="title">Service Layer</text>
+  <text x="40"  y="218" class="label">AuthService (BCrypt) · Session · PatientService · DoctorService · AppointmentService · DashboardService</text>
+  <text x="40"  y="240" class="small">Business rules · validation · role checks · custom exceptions (Validation/NotFound/Conflict/Auth)</text>
+
+  <!-- DAO -->
+  <rect x="20"  y="280" width="840" height="90" class="layer-g"/>
+  <text x="40"  y="304" class="title">DAO Layer</text>
+  <text x="40"  y="328" class="label">UserDao · PatientDao · DoctorDao · AppointmentDao · DashboardDao</text>
+  <text x="40"  y="350" class="small">PreparedStatement · try-with-resources · DataAccessException · Page&lt;T&gt; pagination</text>
+
+  <!-- DB / Infra -->
+  <rect x="20"  y="390" width="840" height="100" class="layer-p"/>
+  <text x="40"  y="414" class="title">Infrastructure</text>
+  <text x="40"  y="438" class="label">HikariCP pool · Flyway migrations (V1__init, V2__auth_and_slots) · SLF4J + Logback · AppConfig</text>
+  <text x="40"  y="460" class="small">Env-var override (DB_URL/DB_USER/DB_PASSWORD)  ·  MySQL 8 (InnoDB, FKs, unique slot constraint)</text>
+
+  <!-- External -->
+  <rect x="700" y="60" width="160" height="430" fill="none"/>
+  <line x1="440" y1="150" x2="440" y2="170" class="arrow" marker-end="url(#arr)"/>
+  <line x1="440" y1="260" x2="440" y2="280" class="arrow" marker-end="url(#arr)"/>
+  <line x1="440" y1="370" x2="440" y2="390" class="arrow" marker-end="url(#arr)"/>
+
+  <text x="20" y="525" class="small">Tests: JUnit 5 · Mockito (service unit) · Testcontainers MySQL (DAO integration)</text>
+</svg>
