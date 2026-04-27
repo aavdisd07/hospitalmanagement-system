@@ -9,30 +9,35 @@ import com.mycompany.hms.exception.ValidationException;
 import com.mycompany.hms.model.Appointment;
 import com.mycompany.hms.model.Doctor;
 import com.mycompany.hms.model.Patient;
+import com.mycompany.hms.testsupport.LocalDbTestBase;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
+import javax.sql.DataSource;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class AppointmentServiceTest {
+class AppointmentServiceTest extends LocalDbTestBase {
 
-    @Mock AppointmentDao appointments;
-    @Mock PatientDao patients;
-    @Mock DoctorDao doctors;
-    @InjectMocks AppointmentService service;
+    private AppointmentDao appointments;
+    private PatientDao patients;
+    private DoctorDao doctors;
+    private AppointmentService service;
 
     private final LocalDate tomorrow = LocalDate.now().plusDays(1);
     private final LocalTime slot = LocalTime.of(10, 0);
+
+    @BeforeEach
+    void wire() {
+        DataSource ds = dataSource();
+        appointments = new AppointmentDao(ds);
+        patients = new PatientDao(ds);
+        doctors = new DoctorDao(ds);
+        service = new AppointmentService(appointments, patients, doctors);
+    }
 
     @Test
     void rejects_past_date() {
@@ -43,7 +48,6 @@ class AppointmentServiceTest {
 
     @Test
     void rejects_unknown_patient() {
-        when(patients.findById(99)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.book(99, 1, tomorrow, slot, null))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Patient");
@@ -51,19 +55,18 @@ class AppointmentServiceTest {
 
     @Test
     void rejects_unknown_doctor() {
-        when(patients.findById(1)).thenReturn(Optional.of(new Patient(1, "Ana", 30, null)));
-        when(doctors.findById(99)).thenReturn(Optional.empty());
-        assertThatThrownBy(() -> service.book(1, 99, tomorrow, slot, null))
+        Patient p = patients.insert(Patient.newPatient("Ana", 30, null));
+        assertThatThrownBy(() -> service.book(p.id(), 99, tomorrow, slot, null))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessageContaining("Doctor");
     }
 
     @Test
     void rejects_double_booked_slot() {
-        when(patients.findById(1)).thenReturn(Optional.of(new Patient(1, "Ana", 30, null)));
-        when(doctors.findById(2)).thenReturn(Optional.of(new Doctor(2, "Dr. Who", "Cardiology")));
-        when(appointments.doctorBookedAt(2, tomorrow, slot)).thenReturn(true);
-        assertThatThrownBy(() -> service.book(1, 2, tomorrow, slot, null))
+        Doctor d = doctors.insert(Doctor.newDoctor("Dr. Who", "Cardiology"));
+        Patient p = patients.insert(Patient.newPatient("Ana", 30, d.id()));
+        appointments.insert(Appointment.newAppointment(p.id(), d.id(), tomorrow, slot, null));
+        assertThatThrownBy(() -> service.book(p.id(), d.id(), tomorrow, slot, null))
                 .isInstanceOf(ConflictException.class)
                 .hasMessageContaining("already booked");
     }
@@ -77,14 +80,10 @@ class AppointmentServiceTest {
 
     @Test
     void books_when_all_valid() {
-        when(patients.findById(1)).thenReturn(Optional.of(new Patient(1, "Ana", 30, null)));
-        when(doctors.findById(2)).thenReturn(Optional.of(new Doctor(2, "Dr. Who", "Cardiology")));
-        when(appointments.doctorBookedAt(2, tomorrow, slot)).thenReturn(false);
-        when(appointments.insert(any())).thenAnswer(inv -> {
-            Appointment a = inv.getArgument(0);
-            return new Appointment(42, a.patientId(), a.doctorId(), a.date(), a.time(), a.notes());
-        });
-        Appointment saved = service.book(1, 2, tomorrow, slot, "checkup");
-        org.assertj.core.api.Assertions.assertThat(saved.id()).isEqualTo(42);
+        Doctor d = doctors.insert(Doctor.newDoctor("Dr. Who", "Cardiology"));
+        Patient p = patients.insert(Patient.newPatient("Ana", 30, d.id()));
+        Appointment saved = service.book(p.id(), d.id(), tomorrow, slot, "checkup");
+        assertThat(saved.id()).isPositive();
+        assertThat(appointments.doctorBookedAt(d.id(), tomorrow, slot)).isTrue();
     }
 }
