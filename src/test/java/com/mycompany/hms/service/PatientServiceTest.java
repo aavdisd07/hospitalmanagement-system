@@ -19,10 +19,10 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PatientServiceTest {
-
-    @Mock PatientDao patients;
+PatientDao dao = new PatientDao(); // real DB connection
+ PatientService service = new PatientService(dao);
+    
     @Mock DoctorDao doctors;
-    @InjectMocks PatientService service;
 
     @Test
     void rejects_blank_name() {
