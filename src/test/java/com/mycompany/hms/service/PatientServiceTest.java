@@ -5,24 +5,28 @@ import com.mycompany.hms.dao.PatientDao;
 import com.mycompany.hms.exception.NotFoundException;
 import com.mycompany.hms.exception.ValidationException;
 import com.mycompany.hms.model.Patient;
+import com.mycompany.hms.testsupport.LocalDbTestBase;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Optional;
+import javax.sql.DataSource;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class PatientServiceTest {
-PatientDao dao = new PatientDao(); // real DB connection
- PatientService service = new PatientService(dao);
-    
-    @Mock DoctorDao doctors;
+class PatientServiceTest extends LocalDbTestBase {
+
+    private PatientDao patients;
+    private DoctorDao doctors;
+    private PatientService service;
+
+    @BeforeEach
+    void wire() {
+        DataSource ds = dataSource();
+        patients = new PatientDao(ds);
+        doctors = new DoctorDao(ds);
+        service = new PatientService(patients, doctors);
+    }
 
     @Test
     void rejects_blank_name() {
@@ -38,18 +42,14 @@ PatientDao dao = new PatientDao(); // real DB connection
 
     @Test
     void rejects_unknown_doctor_reference() {
-        when(doctors.findById(99)).thenReturn(Optional.empty());
         assertThatThrownBy(() -> service.add("Ana", 30, 99))
                 .isInstanceOf(NotFoundException.class);
     }
 
     @Test
     void inserts_when_valid() {
-        when(patients.insert(any())).thenAnswer(inv -> {
-            Patient p = inv.getArgument(0);
-            return new Patient(7, p.name(), p.age(), p.doctorId());
-        });
         Patient saved = service.add("Ana", 30, null);
-        org.assertj.core.api.Assertions.assertThat(saved.id()).isEqualTo(7);
+        assertThat(saved.id()).isPositive();
+        assertThat(patients.findById(saved.id())).isPresent();
     }
 }
