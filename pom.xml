@@ -120,18 +120,12 @@
             <version>${junit.version}</version>
             <scope>test</scope>
         </dependency>
-<<<<<<< HEAD
-=======
-    
-  
->>>>>>> 56e10a1 (11:47)
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
             <version>${assertj.version}</version>
             <scope>test</scope>
         </dependency>
-       
     </dependencies>
 
     <build>
