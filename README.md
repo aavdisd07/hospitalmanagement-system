@@ -6,15 +6,13 @@ A modern Java desktop application for managing patients, doctors, and appointmen
 ![Maven](https://img.shields.io/badge/Build-Maven-C71A36?logo=apachemaven&logoColor=white)
 ![MySQL](https://img.shields.io/badge/DB-MySQL%208-4479A1?logo=mysql&logoColor=white)
 ![Hikari](https://img.shields.io/badge/Pool-HikariCP-2C3E50)
-![Flyway](https://img.shields.io/badge/Migrations-Flyway-CC0200)
 ![FlatLaf](https://img.shields.io/badge/UI-FlatLaf-2E86C1)
 ![JFreeChart](https://img.shields.io/badge/Charts-JFreeChart-27AE60)
 ![JUnit5](https://img.shields.io/badge/Tests-JUnit%205-25A162?logo=junit5&logoColor=white)
-![Testcontainers](https://img.shields.io/badge/Integration-Testcontainers-2496ED?logo=docker&logoColor=white)
 
 ## TL;DR — resume bullets
 
-> Built a Java 17 / Swing hospital management app on a layered architecture (UI → Service → DAO → Hikari → MySQL) with **Flyway-managed schema**, **BCrypt-hashed authentication and role-based menus** (Admin / Doctor / Receptionist), **slot-based appointment scheduling** with database-enforced no-double-booking, **paginated & filtered search**, and one-click **CSV / Excel / PDF exports** (opencsv, Apache POI, OpenPDF). Modern UI via **FlatLaf** with a persistent light/dark theme toggle and an analytics **dashboard powered by JFreeChart**. Tested with **JUnit 5 + Mockito** for service logic and **Testcontainers + MySQL** for DAO integration.
+> Built a Java 17 / Swing hospital management app on a layered architecture (UI → Service → DAO → Hikari → MySQL) with **BCrypt-hashed authentication and role-based menus** (Admin / Doctor / Receptionist), **slot-based appointment scheduling** with database-enforced no-double-booking, **paginated & filtered search**, and one-click **CSV / Excel / PDF exports** (opencsv, Apache POI, OpenPDF). Modern UI via **FlatLaf** with a persistent light/dark theme toggle and an analytics **dashboard powered by JFreeChart**. Tested with **JUnit 5 + AssertJ** against a real local MySQL.
 
 ## Screenshots
 
@@ -43,7 +41,7 @@ Service layer
 DAO layer (PreparedStatement, try-with-resources, Page<T>)
    │   UserDao · PatientDao · DoctorDao · AppointmentDao · DashboardDao
    ▼
-HikariCP pool → MySQL 8 (Flyway migrations: V1 schema, V2 auth + time slots)
+HikariCP pool → MySQL 8
 ```
 
 ## Feature highlights
@@ -56,9 +54,8 @@ HikariCP pool → MySQL 8 (Flyway migrations: V1 schema, V2 auth + time slots)
 - 📊 **Dashboard** — KPI cards + JFreeChart line/bar/pie charts with theme-aware colors
 - 🌗 **Light / dark theme** — FlatLaf Arc Orange / Arc Dark Orange, persisted to `~/.hms-theme`
 - 📤 **Exports** — CSV (opencsv), Excel `.xlsx` (Apache POI), PDF (OpenPDF) — one menu, three formats
-- 🗄 **Schema migrations** — Flyway V1 initial schema, V2 adds users + slot uniqueness; rerunning is safe
 - 🪵 **Logging** — SLF4J + Logback, rolling file appender (`logs/hms.log`)
-- 🧪 **Tests** — JUnit 5 unit tests with Mockito (service logic), Testcontainers integration test (DAO + real MySQL in Docker)
+- 🧪 **Tests** — JUnit 5 + AssertJ, exercising services and DAOs against a real local MySQL
 
 ## Tech stack
 
@@ -68,13 +65,12 @@ HikariCP pool → MySQL 8 (Flyway migrations: V1 schema, V2 auth + time slots)
 | Charting | [JFreeChart](https://www.jfree.org/jfreechart/) |
 | Date picker | [JCalendar](https://github.com/toedter/jcalendar) |
 | DB pool | [HikariCP](https://github.com/brettwooldridge/HikariCP) |
-| Migrations | [Flyway](https://flywaydb.org/) |
 | Auth | [jBCrypt](https://www.mindrot.org/projects/jBCrypt/) |
 | Logging | [SLF4J](https://www.slf4j.org/) + [Logback](https://logback.qos.ch/) |
 | Excel | [Apache POI](https://poi.apache.org/) |
 | PDF | [OpenPDF](https://github.com/LibrePDF/OpenPDF) |
 | CSV | [opencsv](https://opencsv.sourceforge.net/) |
-| Tests | JUnit 5 · Mockito · AssertJ · Testcontainers |
+| Tests | JUnit 5 · AssertJ |
 
 ## Getting started
 
@@ -82,13 +78,15 @@ HikariCP pool → MySQL 8 (Flyway migrations: V1 schema, V2 auth + time slots)
 - **Java 17** (Temurin/OpenJDK)
 - **Maven 3.9+**
 - **MySQL 8** running on `localhost:3306` (or override via env vars — see Security)
-- *(Optional)* **Docker** if you want to run `mvn verify` (Testcontainers integration tests)
 
-### 1. Create the database
+### 1. Create the database and load the schema
 ```sql
 CREATE DATABASE hospitalmanagementsystem CHARACTER SET utf8mb4;
 ```
-> The schema itself is created automatically by Flyway on first launch.
+Then load the schema and seed admin user from `docs/database/schema.sql`:
+```bash
+mysql -u root -p hospitalmanagementsystem < docs/database/schema.sql
+```
 
 ### 2. Configure credentials (optional)
 Defaults are in `src/main/resources/application.properties` (`root` / `root`). Override per-environment by setting env vars:
@@ -126,14 +124,10 @@ mvn -q exec:java -Dexec.mainClass="com.mycompany.hospitalmanagementsystem.Hospit
 ## Tests
 
 ```bash
-# Unit tests only (fast, no Docker needed)
 mvn test
-
-# Unit + integration tests (Testcontainers spins up MySQL in Docker)
-mvn verify
 ```
 
-Current state: 10 unit tests pass; integration test exercises insert / slot conflict / detail join against a real MySQL container.
+Tests run against your local MySQL (configured in `application.properties`) and cover service validation as well as DAO behaviour — insert, slot conflict, and detail join.
 
 ## Security
 
@@ -151,13 +145,11 @@ Full documentation lives in [`docs/database/`](docs/database/):
 | File | Purpose |
 |---|---|
 | [`00_setup.sql`](docs/database/00_setup.sql) | One-time setup — creates the database and a dedicated app user |
-| [`schema.sql`](docs/database/schema.sql) | Reference snapshot of the full schema (post-migrations) |
+| [`schema.sql`](docs/database/schema.sql) | Full schema + seeded admin user — load this on a fresh DB |
 | [`er_diagram.svg`](docs/database/er_diagram.svg) | Entity-relationship diagram |
 | [`er_diagram.txt`](docs/database/er_diagram.txt) | ASCII version of the diagram |
 
-> The live schema is **owned by Flyway**. App startup applies migrations from `src/main/resources/db/migration/`. The files above are reference / docs only.
-
-### Schema (managed by Flyway)
+### Schema
 
 ```
 doctor(id, name, department, created_at, updated_at)
@@ -185,7 +177,7 @@ hospitalmanagement-system/
     │   ├── java/com/mycompany/
     │   │   ├── hms/
     │   │   │   ├── config/   AppConfig
-    │   │   │   ├── db/       Database (Hikari) · Migrator (Flyway)
+    │   │   │   ├── db/       Database (Hikari)
     │   │   │   ├── model/    Patient, Doctor, Appointment, AppointmentDetail,
     │   │   │   │             User, Role, Page<T>, PatientSearchCriteria
     │   │   │   ├── dao/      PatientDao, DoctorDao, AppointmentDao,
@@ -199,11 +191,10 @@ hospitalmanagement-system/
     │   │   └── hospitalmanagementsystem/   ← bootstrap + legacy NetBeans forms
     │   └── resources/
     │       ├── application.properties · logback.xml
-    │       ├── icons/*.svg
-    │       └── db/migration/V1__init_schema.sql · V2__auth_and_slots.sql
+    │       └── icons/*.svg
     └── test/java/com/mycompany/hms/
-        ├── service/   AppointmentServiceTest, PatientServiceTest (Mockito)
-        └── dao/       AppointmentDaoIT (Testcontainers)
+        ├── service/   AppointmentServiceTest, PatientServiceTest
+        └── dao/       AppointmentDaoTest
 ```
 
 > The `com.mycompany.hospitalmanagementsystem` package keeps the original NetBeans-generated `.form` JFrames so the form designer keeps working. New code lives under `com.mycompany.hms.*`. The `BookAppointmentFrame` and `PatientSearchFrame` (under `hms.ui`) replace the legacy `GetAppointment` and `SearchPatient` screens; the rest of the legacy forms are still used and just delegate to services.
@@ -212,7 +203,7 @@ hospitalmanagement-system/
 
 Already shipped:
 
-- ✅ Tier 1 — layered architecture, pool, migrations, logging, tests
+- ✅ Tier 1 — layered architecture, pool, logging, tests
 - ✅ Tier 2 — auth, roles, doctor CRUD, slot scheduling, search/pagination, exports
 - ✅ Tier 3 — FlatLaf, light/dark, dashboard with charts
 
